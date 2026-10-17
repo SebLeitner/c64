@@ -142,6 +142,14 @@ PRG-Download/Upload-Rundlauf, fehlerhafte Dateien, Abbruch und Mobilansicht.
 Terraform-Tests verwenden gemockte AWS-Provider und ersetzen keinen echten
 AWS-Plan oder eine veröffentlichte HTTPS-Prüfung.
 
+## Musikbeispiel: Bach BWV 565
+
+Unter [`public/examples/bwv565`](public/examples/bwv565/README.md) liegen eine
+spielbereite PRG-Datei und der vollständige BASIC-DATA-Quelltext für eine
+dreistimmige Bearbeitung der gesamten Toccata und Fuge d-Moll. Die gemeinfreie
+Mutopia-Partitur, die daraus erzeugte MIDI und der Konverter sind enthalten.
+`bwv565.prg` über LOAD öffnen, TON AN aktivieren und RUN eingeben.
+
 ## Lizenzen
 
 Die eigenen Dateien stehen unter MIT, siehe `LICENSE`.

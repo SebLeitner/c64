@@ -1,0 +1,29 @@
+{
+  "duration_seconds": 572.0,
+  "pal_frames": 28600,
+  "segments": 2306,
+  "player_address": 51200,
+  "score_address": 40960,
+  "labels": {
+    "clear": 51221,
+    "next": 51260,
+    "play": 51269,
+    "skip0": 51311,
+    "skip1": 51350,
+    "skip2": 51389,
+    "leave": 51389,
+    "wait": 51396,
+    "check": 51404,
+    "advance": 51427,
+    "finish": 51430,
+    "bank": 51457,
+    "delay": 51458,
+    "old0": 51459,
+    "old1": 51460,
+    "old2": 51461,
+    "low": 51462,
+    "high": 51590
+  },
+  "midi_sha256": "7ac521cf79fdaf0189b42ea7f90703fa640db0cf5062380df6076655c632161b",
+  "score_sha256": "1422a12d266103a0d18e87c84bd9a6355aabd3c15cc844563cd287ccdb4cf1d1"
+}

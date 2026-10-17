@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#40318d" />
+    <meta
+      name="description"
+      content="Dein Commodore 64 im Browser. BASIC programmieren, lokale PRG-Dateien laden und speichern."
+    />
+    <title>C64 · rootpilot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%2340318d'/%3E%3Ctext x='4' y='29' font-family='monospace' font-size='26' fill='%23786abe'%3EC%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <main>
+      <header class="masthead">
+        <a class="brand" href="/" aria-label="rootpilot C64 Startseite"
+          ><span class="brand-mark">C=</span
+          ><span>rootpilot<span class="brand-sub">COMMODORE 64</span></span></a
+        ><span class="edition">1982, WIEDER BEREIT.</span>
+      </header>
+      <section class="computer" aria-label="Commodore 64 Emulator">
+        <div class="screen-shell">
+          <canvas
+            id="screen"
+            width="384"
+            height="272"
+            tabindex="0"
+            role="application"
+            aria-label="C64 Bildschirm. Zum Tippen anklicken. Escape ist RUN/STOP."
+          ></canvas>
+          <div id="boot" class="boot">DER C64 STARTET …</div>
+        </div>
+        <div class="case-strip">
+          <span class="machine-name">commodore <strong>64</strong></span
+          ><span class="rainbow" aria-hidden="true"
+            ><i></i><i></i><i></i><i></i></span
+          ><span class="power"><i></i> POWER</span>
+        </div>
+      </section>
+      <nav class="toolbar" aria-label="C64 Steuerung">
+        <div>
+          <button id="load" disabled><span>↑</span> LOAD</button
+          ><button id="save" disabled><span>↓</span> SAVE</button>
+        </div>
+        <div>
+          <button id="stop" disabled>RUN/STOP</button
+          ><button id="sound" aria-pressed="false" disabled>TON AUS</button
+          ><button id="reset" disabled>RESET</button
+          ><button id="fullscreen" aria-label="Vollbild">⛶</button
+          ><button id="help" aria-label="Hilfe öffnen">?</button>
+        </div>
+      </nav>
+      <div class="status-line">
+        <span
+          ><i id="activity"></i
+          ><span id="status" role="status" aria-live="polite"
+            >Emulator wird geladen</span
+          ></span
+        ><span>6510 · 64 KB · PAL</span>
+      </div>
+      <details class="mobile-input">
+        <summary>Tastatur / BASIC einfügen</summary>
+        <label for="paste">BASIC-Zeilen oder Befehle</label
+        ><textarea
+          id="paste"
+          spellcheck="false"
+          placeholder='10 PRINT "HALLO WELT"&#10;20 GOTO 10'
+        ></textarea
+        ><button id="type" disabled>EINGEBEN</button>
+      </details>
+      <footer>
+        <span>Ein Cursor. Unendliche Möglichkeiten.</span
+        ><a
+          href="https://github.com/SebLeitner/c64"
+          target="_blank"
+          rel="noopener noreferrer"
+          >QUELLCODE ↗</a
+        >
+      </footer>
+    </main>
+    <dialog id="file-dialog" aria-labelledby="file-title">
+      <form id="file-form">
+        <span class="eyebrow">LOKALES LAUFWERK</span>
+        <h1 id="file-title">Programm laden</h1>
+        <p id="file-description"></p>
+        <label id="open-label" for="open-file"
+          >C64-Programm (.prg)<input id="open-file" type="file" accept=".prg"
+        /></label>
+        <label id="name-label" for="save-name" hidden
+          >Dateiname<input
+            id="save-name"
+            type="text"
+            value="programm.prg"
+            maxlength="120"
+            autocomplete="off"
+        /></label>
+        <p id="file-error" class="error" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" id="file-cancel">ABBRECHEN</button
+          ><button type="submit" id="file-confirm">LADEN</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="help-dialog" aria-labelledby="help-title">
+      <span class="eyebrow">READY.</span>
+      <h1 id="help-title">Zurück zum Anfang.</h1>
+      <p>Klicke auf den Bildschirm und tippe direkt in Commodore BASIC V2.</p>
+      <pre>
+10 PRINT "HALLO WELT"
+20 GOTO 10
+RUN</pre
+      >
+      <dl>
+        <dt>LOAD / SAVE</dt>
+        <dd>
+          Öffnet den lokalen Dateidialog für echte, tokenisierte
+          C64-PRG-Dateien. Dateien bleiben auf deinem Gerät.
+        </dd>
+        <dt>LIST / NEW / RUN</dt>
+        <dd>
+          Programm anzeigen, löschen oder starten. Mit Zeilennummern
+          programmieren; ohne Zeilennummer direkt ausführen.
+        </dd>
+        <dt>Escape</dt>
+        <dd>
+          RUN/STOP. F1–F8, Cursortasten, Home und Einfügen funktionieren als
+          C64-Tasten. Alt ist die Commodore-Taste. Page Up entspricht RESTORE
+          (im Emulator derzeit eingeschränkt).
+        </dd>
+        <dt>POKE / PEEK / SYS</dt>
+        <dd>
+          Greifen auf den emulierten C64 zu. Auch Grafik, Sprites und SID-Ton
+          laufen im Emulator.
+        </dd>
+        <dt>Einfügen</dt>
+        <dd>
+          Strg/Cmd+V auf dem Bildschirm oder „BASIC einfügen“ benutzen. Auf
+          Mobilgeräten steht das Eingabefeld zur Verfügung.
+        </dd>
+      </dl>
+      <p class="fine-print">
+        Browser-Dateidialoge ersetzen Kassette und Diskette bei LOAD/SAVE.
+        Vollständige Kompatibilität mit jeder Hardware-Erweiterung oder jedem
+        Spiel wird nicht zugesichert. Emulator: c64-ready 3.1.0 (MIT), basierend
+        auf c64.js/lvllvl.
+      </p>
+      <button id="help-close">LOS GEHT’S</button>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

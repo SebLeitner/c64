@@ -1,6 +1,6 @@
 import { C64Emulator } from "c64-ready/emulator";
 import InputHandler from "c64-ready/player/input-handler";
-import { AudioEngine } from "c64-ready/player/audio-engine";
+import { SidAudio } from "./sid-audio.js";
 import wasmUrl from "c64-ready/wasm?url";
 import workletUrl from "../node_modules/c64-ready/public/audio-worklet-processor.js?url";
 import { FileBridge, safeFilename } from "./file-bridge.js";
@@ -157,27 +157,69 @@ $("reset").addEventListener("click", () => {
   $("boot").hidden = false;
   setStatus("C64 startet neu");
 });
+function updateAudio(state) {
+  const label = !state.running
+    ? "TON FORTSETZEN"
+    : state.muted
+      ? "TON AUS"
+      : "TON AN";
+  if ($("sound").textContent !== label) $("sound").textContent = label;
+  $("sound").setAttribute(
+    "aria-pressed",
+    String(state.running && !state.muted),
+  );
+  const status = !state.running
+    ? "Audio: Browser pausiert"
+    : state.muted
+      ? "Audio: stummgeschaltet"
+      : state.peak > 0.001
+        ? "Audio: C64-Signal vorhanden"
+        : "Audio: C64 erzeugt gerade keinen Ton";
+  if ($("audio-status").textContent !== status) $("audio-status").textContent = status;
+}
+
+function ensureAudio() {
+  if (!audio) {
+    audio = new SidAudio(
+      workletUrl,
+      () => (bridge.pending ? new Float32Array(4096) : machine.getSidBuffer()),
+      updateAudio,
+    );
+    machine.setSampleRate(audio.sampleRate);
+  }
+  return audio;
+}
+
+async function audioError(error) {
+  setStatus(error.message);
+  if (audio) await audio.destroy();
+  audio = null;
+  $("sound").textContent = "TON AUS";
+  $("sound").setAttribute("aria-pressed", "false");
+  $("audio-status").textContent = `Audiofehler: ${error.message}`;
+}
+
 $("sound").addEventListener("click", async () => {
   try {
-    if (!audio) {
-      audio = new AudioEngine({ workletUrl });
-      await audio.init();
-      if (!audio.ready)
-        throw new Error("Der Browser konnte den SID-Ton nicht starten.");
-      machine.setSampleRate(audio.sampleRate);
-      audio.setSidBufferReader(() =>
-        bridge.pending ? new Float32Array(4096) : machine.getSidBuffer(),
-      );
-    } else audio.toggleMute();
-    await audio.resume();
-    $("sound").textContent = audio.muted ? "TON AUS" : "TON AN";
-    $("sound").setAttribute("aria-pressed", String(!audio.muted));
+    const existing = audio;
+    const state = ensureAudio();
+    if (existing && state.running) state.setMuted(!state.muted);
+    else state.setMuted(false);
+    await state.resume();
   } catch (error) {
-    setStatus(error.message);
-    if (audio) await audio.destroy();
-    audio = null;
+    await audioError(error);
   }
   canvas.focus();
+});
+$("audio-test").addEventListener("click", async () => {
+  try {
+    await ensureAudio().testTone();
+    setStatus(
+      "440-Hz-Testton gestartet. Falls stumm: Tab-Lautstärke, Systemlautstärke und Ausgabegerät prüfen.",
+    );
+  } catch (error) {
+    await audioError(error);
+  }
 });
 $("fullscreen").addEventListener("click", async () => {
   try {
@@ -262,7 +304,15 @@ async function boot() {
         ready = true;
         $("boot").hidden = true;
         setStatus("Bereit. Klicke auf den Bildschirm und tippe los.");
-        for (const id of ["load", "save", "stop", "sound", "reset", "type"])
+        for (const id of [
+          "load",
+          "save",
+          "stop",
+          "sound",
+          "audio-test",
+          "reset",
+          "type",
+        ])
           $(id).disabled = false;
       }
       if (ready && !bridge.pending) keyboard.pump();

@@ -234,6 +234,14 @@ footer a {
   text-decoration: none;
   letter-spacing: 1px;
 }
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 10px;
+}
 .mobile-input {
   margin-top: 21px;
   font-size: 12px;

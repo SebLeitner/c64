@@ -24,6 +24,62 @@ async function typeBasic(page, text) {
   await page.getByRole("button", { name: "EINGEBEN", exact: true }).click();
 }
 
+test("audio reaches the output graph, mute works, and suspended audio resumes", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const createGain = AudioContext.prototype.createGain;
+    AudioContext.prototype.createGain = function (...args) {
+      const gain = createGain.apply(this, args);
+      if (!window.audioProbe) {
+        const analyser = this.createAnalyser();
+        gain.connect(analyser);
+        window.audioProbe = { analyser, context: this };
+      }
+      return gain;
+    };
+    window.outputPeak = () => {
+      const analyser = window.audioProbe?.analyser;
+      if (!analyser) return 0;
+      const samples = new Float32Array(analyser.fftSize);
+      analyser.getFloatTimeDomainData(samples);
+      return Math.max(...samples.map(Math.abs));
+    };
+  });
+  await page.goto("/");
+  await expect(page.locator("#boot")).toBeHidden({ timeout: 20_000 });
+  await page.getByRole("button", { name: "TESTTON", exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => window.outputPeak()))
+    .toBeGreaterThan(0.02);
+  await typeBasic(
+    page,
+    "POKE 54296,15:POKE 54277,0:POKE 54278,240\nPOKE 54272,97:POKE 54273,16:POKE 54276,17",
+  );
+  await expect(page.locator("#audio-status")).toHaveText(
+    "Audio: C64-Signal vorhanden",
+  );
+  await expect
+    .poll(() => page.evaluate(() => window.outputPeak()))
+    .toBeGreaterThan(0.01);
+  await page.getByRole("button", { name: "TON AN", exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => window.outputPeak()))
+    .toBeLessThan(0.00001);
+  await page.getByRole("button", { name: "TON AUS", exact: true }).click();
+  await page.evaluate(() => window.audioProbe.context.suspend());
+  await expect(
+    page.getByRole("button", { name: "TON FORTSETZEN" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "TON FORTSETZEN" }).click();
+  await expect(
+    page.getByRole("button", { name: "TON AN", exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => window.outputPeak()))
+    .toBeGreaterThan(0.01);
+});
+
 test("BASIC program saves through dialog, reloads locally and exports identical PRG", async ({
   page,
 }) => {
@@ -54,13 +110,11 @@ test("BASIC program saves through dialog, reloads locally and exports identical 
   await expect(
     page.getByRole("dialog", { name: "Programm laden" }),
   ).toBeVisible();
-  await page
-    .locator("#open-file")
-    .setInputFiles({
-      name: "demo.prg",
-      mimeType: "application/octet-stream",
-      buffer: original,
-    });
+  await page.locator("#open-file").setInputFiles({
+    name: "demo.prg",
+    mimeType: "application/octet-stream",
+    buffer: original,
+  });
   await page.getByRole("button", { name: "LADEN", exact: true }).click();
   await expect(page.locator("#status")).toContainText("Bytes geladen");
   await typeBasic(page, 'SAVE "KOPIE",8');
@@ -99,13 +153,11 @@ test("invalid file and native save cancellation keep dialogs recoverable; mobile
   await expect(page.locator("#boot")).toBeHidden({ timeout: 20_000 });
   await page.getByRole("button", { name: "LOAD", exact: false }).click();
   await expect(page.locator("#file-dialog")).toBeVisible();
-  await page
-    .locator("#open-file")
-    .setInputFiles({
-      name: "bad.prg",
-      mimeType: "application/octet-stream",
-      buffer: Buffer.from([1]),
-    });
+  await page.locator("#open-file").setInputFiles({
+    name: "bad.prg",
+    mimeType: "application/octet-stream",
+    buffer: Buffer.from([1]),
+  });
   await page.getByRole("button", { name: "LADEN", exact: true }).click();
   await expect(page.locator("#file-error")).toContainText("Ladeadresse");
   await page.getByRole("button", { name: "ABBRECHEN" }).click();

@@ -51,6 +51,11 @@ RUN
   auch auf Mobilgeräten. Es akzeptiert den C64-Zeichensatz, keine Unicode-Emojis.
 - **TON AN** aktiviert SID-Audio nach einer Benutzeraktion. RESET verliert
   ungespeicherte Programme und fragt deshalb vorher nach.
+- **TESTTON** spielt unabhängig vom C64 einen kurzen 440-Hz-Ton. Die
+  Audioanzeige unterscheidet Browserpause, Stummschaltung und vorhandenes
+  C64-Signal. Nach einer Browserpause setzt **TON FORTSETZEN** die Ausgabe fort.
+  Ein vorhandenes Signal bestätigt nicht die Lautstärke oder das Ausgabegerät
+  des Betriebssystems. Bei Firefox zusätzlich die Stummschaltung des Tabs prüfen.
 
 ### Kompatibilitätsgrenzen
 

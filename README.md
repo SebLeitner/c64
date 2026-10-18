@@ -142,6 +142,14 @@ PRG-Download/Upload-Rundlauf, fehlerhafte Dateien, Abbruch und Mobilansicht.
 Terraform-Tests verwenden gemockte AWS-Provider und ersetzen keinen echten
 AWS-Plan oder eine veröffentlichte HTTPS-Prüfung.
 
+## ROOTPILOT-Demo
+
+[`rootpilot-intro.prg`](public/examples/rootpilot-intro/rootpilot-intro.prg)
+zeigt ein bewegtes Sprite-Logo, Sternenfeld, Rasterfarben und Pixel-Laufschrift
+mit eigener dreistimmiger SID-Musik. Datei über LOAD öffnen, TON AN aktivieren
+und RUN eingeben. RUN/STOP beendet das Intro. Quelltext und Bauanleitung stehen
+im [Beispielordner](public/examples/rootpilot-intro/README.md).
+
 ## Musikbeispiel: Bach BWV 565
 
 Unter [`public/examples/bwv565`](public/examples/bwv565/README.md) liegen eine
